@@ -6,6 +6,6 @@ Playable APIを用いてモーション制御をいろいろするサンプル�
 
 メインは以下の三つのファイルです。後はサンプルのためのファイルにすぎません。
 
-* MotionPlayer（MonoBehaviour継承）
-* MotionPlayerParam (通常クラス)
-* MotionMixer (通常クラス)
+* MotionPlayer.cs（MonoBehaviour継承）
+* MotionPlayerParam.cs (通常クラス)
+* MotionMixer.cs (通常クラス)
