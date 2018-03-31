@@ -10,6 +10,7 @@ public class MotionTest : MonoBehaviour
     public Text upperText;
 
     public Toggle overrideToggle;
+    public Slider inpSlider;
     public Toggle loopToggle;
     public Toggle reverseToggle;
     public Toggle waitToggle;
@@ -42,10 +43,7 @@ public class MotionTest : MonoBehaviour
 
         motionPlayer.play(clip, param);
 
-        if (overrideToggle.isOn)
-            motionPlayer.setLayerEnabled(1, true);
-        else
-            motionPlayer.setLayerEnabled(1, false);
+        motionPlayer.setLayerEnabled(inpSlider.value , overrideToggle.isOn);
     }
 
     public void playLower()

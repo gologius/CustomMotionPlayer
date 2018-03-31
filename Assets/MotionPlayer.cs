@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Animations;
+using UnityEngine.UI;
 
 public class MotionPlayer : MonoBehaviour
 {
     [SerializeField, Tooltip("上半身のみ選択したAvaterMask")]
     private AvatarMask upperMask;
-    
+
     //実際にモーション遷移を担当するミキサー
     private List<MotionMixer> motionMixers = new List<MotionMixer>();
 
@@ -20,7 +21,7 @@ public class MotionPlayer : MonoBehaviour
 
     //GetComponent()による自動取得
     private Animator animator;
-
+    
     //============================================================================================================
 
     void Awake()
@@ -79,11 +80,11 @@ public class MotionPlayer : MonoBehaviour
 
         //再接続
         motionMixer.reconnect(clip);
-        layerMixer.ConnectInput(param.layer, motionMixer.mixer, sourceOutputIndex: 0, weight:1f);
+        layerMixer.ConnectInput(param.layer, motionMixer.mixer, sourceOutputIndex: 0, weight: 1f);
 
         //出力
         output.SetSourcePlayable(layerMixer);
-        
+
         return true;
     }
 
@@ -112,7 +113,7 @@ public class MotionPlayer : MonoBehaviour
         motionMixers[layer].nowPlayable.SetTime(t); //時間を指定→その時間におけるポーズになる
         motionMixers[layer].nowPlayable.SetSpeed(0f); //再生速度を0に→停止
     }
-    
+
     //============================================================================================================
 
     //指定したモーションの再生が完了しているか
@@ -128,15 +129,39 @@ public class MotionPlayer : MonoBehaviour
     }
 
     //部位(上半身)の上書きをするか決定する
-    public void setLayerEnabled(int layer, bool enable)
+    public void setLayerEnabled(float duration, bool enable)
     {
-        if (enable == true)
+        StartCoroutine(crossFadeLayerWeight(1, duration, enable));
+    }
+
+    //
+    private IEnumerator crossFadeLayerWeight(int layer, float duration, bool enable)
+    {
+        Debug.Log(enable + " "+ layerMixer.GetInputWeight(layer));
+        //既に有効/無効になっている場合は処理しない
+        if (enable && layerMixer.GetInputWeight(layer) >= 1f)
+            yield break;
+        else if (enable == false && layerMixer.GetInputWeight(layer) <= 0f)
+            yield break;
+
+        // 指定時間でアニメーションをブレンド
+        float waitTime = Time.time + duration;
+        yield return new WaitWhile(() =>
         {
-            layerMixer.SetInputWeight(layer, 1f);
-        }
-        else
-        {
-            layerMixer.SetInputWeight(layer, 0f);
-        }
+
+            float diff = waitTime - Time.time;
+            float rate = Mathf.Clamp01(diff / duration);
+            float weight = (enable) ? 1 - rate : rate;
+            layerMixer.SetInputWeight(layer, weight);
+
+            if (diff <= 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        });
     }
 }
